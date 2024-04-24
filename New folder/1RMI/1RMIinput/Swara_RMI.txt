@@ -1,0 +1,118 @@
+Name: Hole Swaranjali Shivaji 
+Roll No: 510
+
+import java.rmi.*;
+
+public interface Add extends Remote{
+	public int add(int a,int b) throws RemoteException;
+	public int sub(int a,int b) throws RemoteException;
+	public int mul(int a,int b) throws RemoteException;
+	public int div(int a,int b) throws RemoteException;
+}
+
+
+import java.rmi.*;
+import java.rmi.server.*;
+
+public class AddImpl extends UnicastRemoteObject implements Add {
+	AddImpl() throws RemoteException{
+	super();
+	}
+	public int add(int a,int b){
+	return a+b;
+	}
+	public int sub(int a,int b){
+	return a-b;
+	}
+	public int mul(int a,int b){
+	return a*b;
+	}
+	public int div(int a,int b){
+	return a/b;
+	}
+	
+}
+
+
+import java.rmi.*;
+import java.rmi.registry.*;
+
+public class Server{
+	public static void main(String args[]){
+		try{
+			Add obj=new AddImpl();
+			Naming.rebind("rmi://localhost/guru",obj);
+			
+			System.out.println("Server Started");
+		}
+		catch(Exception e){
+			System.out.println(e);
+		}
+			
+	}
+}
+
+
+import java.rmi.*;
+
+public class Client extends Thread{
+	public  void run(){
+	
+
+		try{
+			Add obj=(Add)Naming.lookup("rmi://localhost/guru");
+			System.out.println(Thread.currentThread().getName()+" Addition is: "+obj.add(20,25));
+			System.out.println(Thread.currentThread().getName()+ " Subtraction is: "+obj.sub(50,23));
+			System.out.println(Thread.currentThread().getName()+" Muiltiplication is: "+obj.mul(20,5));
+			System.out.println(Thread.currentThread().getName()+" Division is: "+obj.div(40,5));
+			
+		}
+		catch(Exception e){
+			System.out.println(e);
+		}
+		
+	}
+	
+	public static void main(String args[]){
+		
+	Client c=new Client();
+	c.setName("Thread 1");
+	c.start();
+	Client c2=new Client();
+	c.setName("Thread 2");
+	c2.start();
+	
+	
+		
+		
+	}
+}
+
+
+Output:
+
+it@it-HP-EliteDesk-800-G2-SFF:~/Desktop/Swaranjali/DSP/RMII$ javac *.java
+it@it-HP-EliteDesk-800-G2-SFF:~/Desktop/Swaranjali/DSP/RMII$ rmic AddImpl
+Warning: generation and use of skeletons and static stubs for JRMP	
+is deprecated. Skeletons are unnecessary, and static stubs have	
+been superseded by dynamically generated stubs. Users are	
+encouraged to migrate away from using rmic to generate skeletons and static	
+stubs. See the documentation for java.rmi.server.UnicastRemoteObject.
+it@it-HP-EliteDesk-800-G2-SFF:~/Desktop/Swaranjali/DSP/RMII$ rmiregistry
+
+
+it@it-HP-EliteDesk-800-G2-SFF:~/Desktop/Swaranjali/DSP/RMII$ java Server
+Server Started
+
+
+it@it-HP-EliteDesk-800-G2-SFF:~/Desktop/Swaranjali/RMII$ java Client
+Thread 2 Addition is: 45
+Thread-1 Addition is: 45
+Thread 2 Subtraction is: 27
+Thread-1 Subtraction is: 27
+Thread 2 Muiltiplication is: 100
+Thread-1 Muiltiplication is: 100
+Thread 2 Division is: 8
+Thread-1 Division is: 8
+it@it-HP-EliteDesk-800-G2-SFF:~/Desktop/Swaranjali/DSP/RMI$ 
+

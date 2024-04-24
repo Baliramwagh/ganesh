@@ -1,0 +1,8 @@
+1st terminal:
+	1.idlj --fall Addition.idl
+	2.javac *.java AdditionApp/*.java
+	3.orbd -ORBInitialPort 1050&
+	4.java StartServer -ORBInitialPort 1050 -ORBInitialHost localhost&
+
+2nd Terminal:
+	1.java StartClient -ORBInitialPort 1050 -ORBInitialHost localhost

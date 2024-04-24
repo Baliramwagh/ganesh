@@ -1,0 +1,11 @@
+1st Terminal:	
+	1.javac *.java
+	2.rmic PrimeRemote
+	2.rmiregistry 5000
+
+2nd Terminal: 
+	java MyServer
+
+3rd Terminal: 
+
+	java MyClient

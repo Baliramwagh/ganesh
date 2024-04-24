@@ -1,0 +1,107 @@
+StringOpsClient.java
+
+import org.omg.CORBA.*;
+import org.omg.CosNaming.*;
+import StringOps.*;
+
+public class StringOpsClient {
+    public static void main(String[] args) {
+        try {
+            // Initialize the ORB
+            ORB orb = ORB.init(args, null);
+
+            // Get the root naming context
+            org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
+            NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
+
+            // Resolve the string operations object from the naming context
+            String name = "StringOps";
+            NameComponent[] path = ncRef.to_name(name);
+            org.omg.CORBA.Object stringOpsRef = ncRef.resolve(path);
+
+            // Narrow the object reference to the StringOperations interface
+            StringOperations stringOps = StringOperationsHelper.narrow(stringOpsRef);
+
+            // Use the string operations object
+            String result = stringOps.concat("Hii","Gamers");
+            System.out.println("Concatenation: " + result);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+StringOpsServer.java
+
+import org.omg.CORBA.*;
+import org.omg.CosNaming.*;
+import org.omg.PortableServer.*;
+import StringOps.*;
+
+public class StringOpsServer {
+    public static void main(String[] args) {
+        try {
+            // Initialize the ORB
+            ORB orb = ORB.init(args, null);
+
+            // Create an instance of the string operations object
+            POA rootPOA = POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
+            rootPOA.the_POAManager().activate();
+            StringOpsImpl stringOpsImpl = new StringOpsImpl();
+            org.omg.CORBA.Object stringOpsRef = rootPOA.servant_to_reference(stringOpsImpl);
+
+            // Get the root naming context
+            org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
+            NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
+
+            // Bind the string operations object to the naming context
+            String name = "StringOps";
+            NameComponent[] path = ncRef.to_name(name);
+            ncRef.rebind(path, stringOpsRef);
+
+            System.out.println("String operations server is ready.");
+            orb.run();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+StringOpsImpl.java
+
+import StringOps.*;
+
+public class StringOpsImpl extends StringOperationsPOA {
+    public String concat(String str1, String str2) {
+        return str1 + str2;
+    }
+}
+
+StringOps.idl
+
+module StringOps {
+    interface StringOperations {
+        string concat(in string str1, in string str2);
+    };
+};
+
+
+OUTPUT
+
+guest-8g6zbo@itl1-OptiPlex-390:~/Desktop/Untitled Folder$ idlj -fall stringops.idl
+guest-8g6zbo@itl1-OptiPlex-390:~/Desktop/Untitled Folder$ javac *.javaNote: ./StringOps/StringOperationsPOA.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+guest-8g6zbo@itl1-OptiPlex-390:~/Desktop/Untitled Folder$ orbd -ORBInitialPort 1050&
+[1] 4665
+guest-8g6zbo@itl1-OptiPlex-390:~/Desktop/Untitled Folder$ java StringOpsServer -ORBInitialPort 1050 -ORBInitialHost localhost&
+[2] 4683
+guest-8g6zbo@itl1-OptiPlex-390:~/Desktop/Untitled Folder$ String operations server is ready.
+
+
+
+
+guest-8g6zbo@itl1-OptiPlex-390:~/Desktop/Untitled Folder$ java StringOpsClient -ORBInitialPort 1050 -ORBInitialHost localhost
+Concatenation: HiiGamers
+guest-8g6zbo@itl1-OptiPlex-390:~/Desktop/Untitled Folder$ 
+
+

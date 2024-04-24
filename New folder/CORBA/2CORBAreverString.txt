@@ -1,0 +1,174 @@
+Name: Raskar Suyash
+Roll no: 529
+
+
+
+StringReverse.IDL
+
+StringReverse.idl
+module StringReverseApp{
+ interface StringReverse{
+ string doReverse(in string str1);
+ oneway void shutdown();
+ };
+};
+
+
+
+
+
+
+
+CLIENT
+
+
+import java.util.Scanner;
+
+import org.omg.CORBA.ORB;
+import org.omg.CosNaming.NamingContextExt;
+import org.omg.CosNaming.NamingContextExtHelper;
+
+import StringReverseApp.StringReverse;
+import StringReverseApp.StringReverseHelper;
+
+public class Client {
+    public static void main(String[] args){
+        try{
+            ORB orb = ORB.init(args, null);
+            org.omg.CORBA.Object objref = orb.resolve_initial_references("NameService");
+            NamingContextExt ncref = NamingContextExtHelper.narrow(objref);
+            StringReverse obj = (StringReverse) StringReverseHelper.narrow(ncref.resolve_str("ABC"));
+
+            Scanner sc = new Scanner(System.in);
+            String str1 = sc.nextLine();
+
+            System.out.println("Reversed String Is : " + obj.doReverse(str1));
+            
+
+        }catch(Exception e){
+            System.out.println("Client Exception....");
+        }
+    }    
+}
+
+
+
+SERVER
+
+
+import org.omg.CORBA.ORB;
+import org.omg.PortableServer.POA;
+import org.omg.PortableServer.POAHelper;
+import org.omg.CosNaming.NamingContextExt;
+import org.omg.CosNaming.NamingContextExtHelper;
+import org.omg.CosNaming.NameComponent;
+import StringReverseApp.StringReverse;
+import StringReverseApp.StringReverseHelper;
+import StringReverseApp.StringReversePOA;
+import java.lang.*;
+
+
+class StringReverseImpl extends StringReversePOA{
+    private ORB orb;
+
+    public void setORB(ORB orb_value){
+        this.orb = orb_value;
+    }
+
+    public String doReverse(String str1){
+        String revStr = "";
+        for(int i=str1.length()-1; i>=0; i--){
+            revStr = revStr + str1.charAt(i);
+        }
+        
+        return revStr;
+    }
+
+    public void shutdown(){
+        orb.shutdown(false);
+    }
+}
+
+
+public class Server{
+
+    public static void main(String[] args){
+        try{
+            ORB orb = ORB.init(args, null);
+            POA rootPOA = POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
+            rootPOA.the_POAManager().activate();
+
+            StringReverseImpl strobj = new StringReverseImpl();
+            strobj.setORB(orb);
+
+            org.omg.CORBA.Object refobj = rootPOA.servant_to_reference(strobj);
+            StringReverse href = StringReverseHelper.narrow(refobj);
+
+            org.omg.CORBA.Object objref = orb.resolve_initial_references("NameService");
+            NamingContextExt ncref = NamingContextExtHelper.narrow(objref);
+
+            NameComponent path[] = ncref.to_name("ABC");
+            ncref.rebind(path, href);
+
+            System.out.println("Server Is Ready And Waiting....");
+
+            for(;;){
+                orb.run();
+            }
+ 
+        }catch(Exception e){
+            System.out.println("Server Exception.....");
+        }
+
+        System.out.println("Server Is Exitting.....");
+    }
+}
+
+///OUTPUT///
+
+
+// OUTPUT
+// Terminal -01
+(base) itl1@itl1-OptiPlex-390:~$ cd md\
+> 
+(base) itl1@itl1-OptiPlex-390:~/md$ ls
+Client.java  Server.java  StringReverse.idl
+(base) itl1@itl1-OptiPlex-390:~/md$ idlj -fall StringReverse.idl 
+(base) itl1@itl1-OptiPlex-390:~/md$ ls
+Client.java  Server.java  StringReverseApp  StringReverse.idl
+(base) itl1@itl1-OptiPlex-390:~/md$ javac *.java StringReverseApp/*.java
+Note: StringReverseApp/StringReversePOA.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+(base) itl1@itl1-OptiPlex-390:~/md$ ls
+Client.java  Server.java  StringReverse.idl
+(base) itl1@itl1-OptiPlex-390:~/md$ idlj -fall StringReverse.idl 
+(base) itl1@itl1-OptiPlex-390:~/md$ javac *.java StringReverseApp/*.java
+Note: StringReverseApp/StringReversePOA.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+(base) itl1@itl1-OptiPlex-390:~/md$ orbd -ORBInitialPort 1050&
+[1] 17292
+(base) itl1@itl1-OptiPlex-390:~/md$ java Server -ORBInitialPort 1050 -ORBInitialHost
+Server Is Ready And Waiting....
+
+//Terminal -02
+
+(base) itl1@itl1-OptiPlex-390:~/md$ java Client -ORBInitialPort 1050 -ORBInitialHost
+SVPM COE
+Reversed String Is : EOC MPVS
+(base) itl1@itl1-OptiPlex-390:~/md$ 
+
+
+(base) itl1@itl1-OptiPlex-390:~/md$ java Client -ORBInitialPort 1050 -ORBInitialHost
+SUYASH RASKAR
+Reversed String Is : RAKSAR HSAYUS
+(base) itl1@itl1-OptiPlex-390:~/md$ ^C
+(base) itl1@itl1-OptiPlex-390:~/md$ 
+
+
+
+
+
+
+
+
+

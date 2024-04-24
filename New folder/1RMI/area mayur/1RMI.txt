@@ -1,0 +1,103 @@
+Name: Raskar Suyash
+Roll no: 529
+
+
+
+
+
+Add.java
+import java.rmi.*;
+public interface Add extends Remote{
+public int AreaOfRectangle(int l,int b) throws RemoteException;
+}
+
+AddImpl.java
+import java.rmi.*;
+import java.rmi.server.*;
+public class AddImpl extends UnicastRemoteObject implements Add {
+ AddImpl() throws RemoteException {
+ super();
+ }
+ @Override
+ public int AreaOfRectangle(int length, int width) {
+ return length * width;
+ }
+}
+Client.java
+import java.rmi.*;
+import java.util.Scanner;
+public class Client {
+ public static void main(String[] args) {
+ Scanner scanner = new Scanner(System.in);
+ System.out.print("Enter the length of the rectangle for Thread 1: ");
+ final int length1 = scanner.nextInt();
+ System.out.print("Enter the width of the rectangle for Thread 1: ");
+ final int width1 = scanner.nextInt();
+ System.out.print("Enter the length of the rectangle for Thread 2: ");
+ final int length2 = scanner.nextInt();
+ System.out.print("Enter the width of the rectangle for Thread 2: ");
+ final int width2 = scanner.nextInt();
+ Thread inputThread1 = new Thread(new Runnable() {
+ @Override
+ public void run() {
+ try {
+ Add obj1 = (Add) Naming.lookup("rmi://localhost/suyash");
+ System.out.println("Area of Rectangle for Thread 1 is: " +
+obj1.AreaOfRectangle(length1, width1));
+ } catch (Exception e) {
+ System.out.println(e);
+ }
+ }
+ });
+ Thread inputThread2 = new Thread(new Runnable() {
+ @Override
+ public void run() {
+ try {
+ Add obj2 = (Add) Naming.lookup("rmi://localhost/suyash");
+ System.out.println("Area of Rectangle for Thread 2 is: " +
+obj2.AreaOfRectangle(length2, width2));
+ } catch (Exception e) {
+ System.out.println(e);
+ }
+ }
+ });
+ inputThread1.start();
+ inputThread2.start();
+ try {
+ inputThread1.join();
+ inputThread2.join();
+ } catch (InterruptedException e) {
+ e.printStackTrace();
+ }
+ }
+}
+Server.java
+import java.rmi.*;
+import java.rmi.registry.*;
+public class Server{
+public static void main(String args[]){
+ try{
+ Add obj=new AddImpl();
+ Naming.rebind("rmi://localhost/suyash",obj);
+
+ System.out.println("Server Started");
+ }
+ catch(Exception e){
+ System.out.println(e);
+ }
+
+}
+}
+//output
+PS C:\Users\Mayur\Desktop\suyash> javac *.java
+PS C:\Users\Mayur\Desktop\suyash> rmiregistry
+PS C:\Users\Mayur\Desktop\suyash> java Server
+Server Started
+PS C:\Users\Mayur\Desktop\suyash> java Client
+Enter the length of the rectangle for Thread 1: 10
+Enter the width of the rectangle for Thread 1: 10
+Enter the length of the rectangle for Thread 2: 15
+Enter the width of the rectangle for Thread 2: 15
+Area of Rectangle for Thread 2 is: 225
+Area of Rectangle for Thread 1 is: 100
+PS C:\Users\Mayur\Desktop\suyash>
